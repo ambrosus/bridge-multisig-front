@@ -97,17 +97,28 @@ function App() {
     }))
   };
 
-  const addOwner = () => contract.current.addOwner(formData.ownersAdd);
-  const removeOwner = () => contract.current.addOwner(formData.ownersRemove);
-  const replaceOwner = () => contract.current.addOwner(formData.ownersReplaceFrom, formData.ownersReplaceTo);
-  const changeRequirement = () => contract.current.changeRequirement(+formData.changeRequirement);
-  const submitTransaction = () => contract.current.submitTransaction(contract.current.address, 0, formData.submitTransaction);
-  // todo revokeConfirmation
-  // todo update on transaction confirmed
+  const handleTx = async (txPromise) => {
+    try {
+      const tx = await txPromise
+      await (tx).wait();
+      await createContract()
+    } catch (e) {
+      alert("Error: " + e.message);
+      console.error(e);
+    }
+  }
+  const __submitTransaction = async (populatedTx) => _submitTransaction((await populatedTx).data);
+  const _submitTransaction = (calldata) => handleTx(contract.current.submitTransaction(contract.current.address, 0, calldata, {gasLimit: 10000000}));
 
-  const handleConfirm = (id) => {
-    contract.current.confirmTransaction(id);
-  };
+  const addOwner = () => __submitTransaction(contract.current.populateTransaction.addOwner(formData.ownersAdd));
+  const removeOwner = () => __submitTransaction(contract.current.populateTransaction.addOwner(formData.ownersRemove));
+  const replaceOwner = () => __submitTransaction(contract.current.populateTransaction.replaceOwner(formData.ownersReplaceFrom, formData.ownersReplaceTo));
+  const changeRequirement = () => __submitTransaction(contract.current.populateTransaction.changeRequirement(+formData.changeRequirement));
+
+  const submitTransaction = () => _submitTransaction(formData.submitTransaction);
+  const confirmTransaction = (id) => handleTx(contract.current.confirmTransaction(id));
+
+  // todo revokeConfirmation
 
   return (
     <div>
@@ -170,7 +181,7 @@ function App() {
 
           {/* show button only if not executed yet */}
           {el.executeTx === undefined &&
-            <button onClick={() => handleConfirm(el.id)}>Confirm</button>
+            <button onClick={() => confirmTransaction(el.id)}>Confirm</button>
           }
           <br/>
           <br/>
