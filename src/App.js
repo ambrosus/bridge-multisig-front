@@ -1,14 +1,14 @@
 import './App.css';
 import {useWeb3React} from '@web3-react/core';
 import {useEffect, useRef, useState} from 'react';
-import providers, {ambChainId} from './utils/providers';
-import createBridgeContract from './utils/contracts';
-import {ConfiguredInjectedConnector} from './utils/web3';
+import {createBridgeContract, ConfiguredInjectedConnector, defaultContractAddress, getTxs} from './utils/contracts';
 
 function App() {
-  const {activate, account, library} = useWeb3React();
+  const {activate, account, library, chainId} = useWeb3React();
 
-  const [chainId, setChainId] = useState(ambChainId);
+  const [address, setAddress] = useState(defaultContractAddress);
+
+  const [implementation, setImplementation] = useState("");
   const [owners, setOwners] = useState([]);
   const [required, setRequired] = useState([]);
 
@@ -29,65 +29,25 @@ function App() {
   }, [chainId]);
 
   useEffect(() => {
-    if (account) {
+    if (account)
       createContract();
-    }
-  }, [account]);
+
+  }, [account, chainId, address]);
 
   const createContract = async () => {
-    contract.current = createBridgeContract[chainId](library.getSigner());
-    handleOwners();
-    handleRequired();
-    handleTxs();
-  };
+    contract.current = createBridgeContract(address, library.getSigner());
 
-  const handleOwners = async () => {
-    const owners = await contract.current.getOwners();
-    setOwners(owners);
-  };
-
-  const handleRequired = async () => {
-    const required = await contract.current.required();
-    setRequired(+required);
-  };
-
-  const handleTxs = async () => {
-    const {current} = contract;
-
-    const count = await current.transactionCount();
-    // args: from, to, includePending, includeExecuted
-    const txIds = await current.getTransactionIds(0, count, true, true);
-
-    // get execution results for each tx from events
-    const txExecuteTx = {};
-    const txStatus = {};
-    const getEvents = async (filter) => (await current.queryFilter(filter))
-      .map(log => ({...log, ...current.interface.parseLog(log)}));
-    const successfullTx = await getEvents(current.filters.Execution());
-    const failedTx = await getEvents(current.filters.ExecutionFailure());
-    successfullTx.forEach(log => txStatus[log.args.transactionId] = 'Success');
-    failedTx.forEach(log => txStatus[log.args.transactionId] = 'Failure');
-    [...successfullTx, ...failedTx].forEach(log => txExecuteTx[log.args.transactionId] = log);
-
-    const txPromises = txIds.map((el) => (
-      new Promise(async (resolve) => {
-        const tx = await current.transactions(el);
-        const confirmed = await current.getConfirmations(el);
-
-        const executeTx = txExecuteTx[el];
-        const status = txStatus[+el] || 'Not yet';  // Success, Failure or Not yet
-
-        resolve({...tx, id: el, confirmed, status, executeTx});
-      })
-    ));
-    Promise.all(txPromises)
-      .then((response) => {
-        response.reverse() // newest first
-        setTxs(response)
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+    try {
+      setImplementation(await contract.current.implementation());
+      setOwners(await contract.current.getOwners());
+      setRequired(+await contract.current.required());
+      setTxs(await getTxs(contract.current));
+    } catch (e) {
+      setImplementation("Can't fetch info from this contract");
+      setOwners([]);
+      setRequired("");
+      setTxs([]);
+    }
   };
 
   const handleFormData = ({target}) => {
@@ -121,6 +81,17 @@ function App() {
 
   return (
     <div>
+      <span>ChainID: {chainId}</span>
+      <br/>
+
+      <span>Contract address: </span>
+      <input name="address" type="text" onChange={({target}) => setAddress(target.value)} value={address}
+             placeholder="Contract address"/>
+      <br/>
+
+      <span>Implementation address: {implementation}</span>
+      <hr/>
+
       <h3>Owners:</h3>
       {owners.map((el) => (
         <p key={el}>{el}</p>
