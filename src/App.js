@@ -93,12 +93,13 @@ function App() {
       <hr/>
 
       <h3>Owners:</h3>
-      {owners.map((el) => (
-        <p key={el}>{el}</p>
-      ))}
+      <ul>
+        {owners.map((el) => (
+          <li key={el}>{el}</li>
+        ))}
+      </ul>
 
       <strong>Required:</strong> {required}
-
       <br/>
       <hr/>
 
@@ -130,6 +131,7 @@ function App() {
              placeholder="Transaction calldata"/>
       <button onClick={submitTransaction}>Submit</button>
       <br/>
+      <hr/>
 
 
       <h3>Transactions:</h3>
