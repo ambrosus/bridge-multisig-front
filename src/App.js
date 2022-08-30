@@ -117,8 +117,7 @@ function App() {
 
   const submitTransaction = () => _submitTransaction(formData.submitTransaction);
   const confirmTransaction = (id) => handleTx(contract.current.confirmTransaction(id));
-
-  // todo revokeConfirmation
+  const revokeConfirmation = (id) => handleTx(contract.current.revokeConfirmation(id));
 
   return (
     <div>
@@ -179,9 +178,11 @@ function App() {
 
           <strong>Calldata: </strong> <span>{el.data} </span>
 
-          {/* show button only if not executed yet */}
-          {el.executeTx === undefined &&
-            <button onClick={() => confirmTransaction(el.id)}>Confirm</button>
+          {el.executeTx === undefined && /* show buttons only if not executed yet*/
+            (el.confirmed.includes(account) &&
+              <button onClick={() => revokeConfirmation(el.id)}>Revoke</button> ||
+              <button onClick={() => confirmTransaction(el.id)}>Confirm</button>
+            )
           }
           <br/>
           <br/>
