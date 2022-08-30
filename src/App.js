@@ -52,27 +52,45 @@ function App() {
   };
 
   const handleTxs = async () => {
-    const { current } = contract;
+    const {current} = contract;
 
     const count = await current.transactionCount();
-    const t = await current.getTransactionIds(0, count , true, false);
+    // args: from, to, includePending, includeExecuted
+    const txIds = await current.getTransactionIds(0, count, true, true);
 
-    const promises = t.map((el) => (
+    // get execution results for each tx from events
+    const txExecuteTx = {};
+    const txStatus = {};
+    const getEvents = async (filter) => (await current.queryFilter(filter))
+      .map(log => ({...log, ...current.interface.parseLog(log)}));
+    const successfullTx = await getEvents(current.filters.Execution());
+    const failedTx = await getEvents(current.filters.ExecutionFailure());
+    successfullTx.forEach(log => txStatus[log.args.transactionId] = 'Success');
+    failedTx.forEach(log => txStatus[log.args.transactionId] = 'Failure');
+    [...successfullTx, ...failedTx].forEach(log => txExecuteTx[log.args.transactionId] = log);
+
+    const txPromises = txIds.map((el) => (
       new Promise(async (resolve) => {
         const tx = await current.transactions(el);
         const confirmed = await current.getConfirmations(el);
 
-        resolve({ ...tx, id: el, confirmed });
+        const executeTx = txExecuteTx[el];
+        const status = txStatus[+el] || 'Not yet';  // Success, Failure or Not yet
+
+        resolve({...tx, id: el, confirmed, status, executeTx});
       })
     ));
-    Promise.all(promises)
-      .then((response) => setTxs(response))
+    Promise.all(txPromises)
+      .then((response) => {
+        response.reverse() // newest first
+        setTxs(response)
+      })
       .catch((e) => {
         console.log(e);
       });
   };
 
-  const handleFormData = ({ target }) => {
+  const handleFormData = ({target}) => {
     setFormData((state) => ({
       ...state,
       [target.name]: target.value
@@ -135,10 +153,28 @@ function App() {
 
       <h3>Transactions:</h3>
       {txs.map((el) => (
-        <div key={el.data}>
-          <span>{el.data} </span>
-          <button onClick={() => handleConfirm(el.id)}>Confirm</button>
-          {el.confirmed && (<p>Confirmed by: {el.confirmed.join(', ')}</p>)}
+        <div key={+el.id}>
+          <strong>ID:</strong> <span>{+el.id} </span>
+          <br/>
+
+          <strong>Executed:</strong> <span>{el.status} </span>
+          {el.executeTx !== undefined &&
+            <i>(Tx\: {el.executeTx.transactionHash} )</i>
+          }
+          <br/>
+
+          <strong>Confirmed by: </strong> <span>{el.confirmed.join(', ')} </span>
+          <br/>
+
+          <strong>Calldata: </strong> <span>{el.data} </span>
+
+          {/* show button only if not executed yet */}
+          {el.executeTx === undefined &&
+            <button onClick={() => handleConfirm(el.id)}>Confirm</button>
+          }
+          <br/>
+          <br/>
+
         </div>
       ))}
     </div>
