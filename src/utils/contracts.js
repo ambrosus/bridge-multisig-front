@@ -5,11 +5,32 @@ import {InjectedConnector} from "@web3-react/injected-connector";
 
 // eth-amb on amb devnet
 export const defaultContractAddress = '0xd10398881907BeB5796bf394EE30904Def78e30b';
+
 export const createBridgeContract = (address, provider) => new ethers.Contract(address, ABI, provider);
 
 export const ConfiguredInjectedConnector = new InjectedConnector({
   // supportedChainIds: [ethChainId, ambChainId],
 });
+
+// todo show this addresses in the UI selector (+ custom input address)
+export async function getAdresses() {
+  const results = await Promise.all([
+    fetchConfig('https://bridge-config.ambrosus-dev.io/index.html', 'dev'),
+    fetchConfig('https://bridge-config.ambrosus-test.io/index.html', 'test'),
+    fetchConfig('https://bridge-config.ambrosus.io/index.html', 'main'),
+  ])
+  return results.reduce((acc, cur) => ({...acc, ...cur}), {})
+}
+const fetchConfig = async (url, stage) => {
+  let res = {}
+  const response = await (await fetch(url)).json()
+  for (let [pair, addresses] of Object.entries(response.bridges)) {
+    res[`${stage}_${pair}_${pair}`] = addresses.side
+    res[`${stage}_${pair}_amb`] = addresses.amb
+  }
+  return res
+};
+
 
 export async function getTxs(contract) {
   const count = await contract.transactionCount();

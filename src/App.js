@@ -1,11 +1,18 @@
 import './App.css';
 import {useWeb3React} from '@web3-react/core';
 import {useEffect, useRef, useState} from 'react';
-import {createBridgeContract, ConfiguredInjectedConnector, defaultContractAddress, getTxs} from './utils/contracts';
+import {
+  createBridgeContract,
+  ConfiguredInjectedConnector,
+  defaultContractAddress,
+  getTxs,
+  getAdresses
+} from './utils/contracts';
 
 function App() {
   const {activate, account, library, chainId} = useWeb3React();
 
+  const [addresses, setAddresses] = useState([]);
   const [address, setAddress] = useState(defaultContractAddress);
 
   const [implementation, setImplementation] = useState("");
@@ -35,6 +42,7 @@ function App() {
   }, [account, chainId, address]);
 
   const createContract = async () => {
+    setAddresses(Object.entries(await getAdresses()))
     contract.current = createBridgeContract(address, library.getSigner());
 
     try {
@@ -87,8 +95,12 @@ function App() {
       <span>Contract address: </span>
       <input name="address" type="text" onChange={({target}) => setAddress(target.value)} value={address}
              placeholder="Contract address"/>
+      <select onChange={(e) => setAddress(e.target.value)}>
+        {addresses.map(([k, v]) => (
+          <option value={v} key={k}>{k}</option>
+        ))}
+      </select>
       <br/>
-
       <span>Implementation address: {implementation}</span>
       <hr/>
 
