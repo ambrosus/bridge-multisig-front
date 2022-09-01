@@ -95,11 +95,9 @@ function App() {
       <span>Contract address: </span>
       <input name="address" type="text" onChange={({target}) => setAddress(target.value)} value={address}
              placeholder="Contract address"/>
-      <br/>
-      <h3>Addresses: (todo selector)</h3>
       <select onChange={(e) => setAddress(e.target.value)}>
         {addresses.map(([k, v]) => (
-          <option value={v} key={k}>{v} {k}</option>
+          <option value={v} key={k}>{k}</option>
         ))}
       </select>
       <br/>
