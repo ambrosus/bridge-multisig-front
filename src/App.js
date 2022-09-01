@@ -97,11 +97,12 @@ function App() {
              placeholder="Contract address"/>
       <br/>
       <h3>Addresses: (todo selector)</h3>
-      <ul>
+      <select onChange={(e) => setAddress(e.target.value)}>
         {addresses.map(([k, v]) => (
-          <li key={k}>{k} {v}</li>
+          <option value={v} key={k}>{v} {k}</option>
         ))}
-      </ul>
+      </select>
+      <br/>
       <span>Implementation address: {implementation}</span>
       <hr/>
 
