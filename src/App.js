@@ -149,7 +149,7 @@ function App() {
           <strong>Confirmed by: </strong> <span>{el.confirmed.join(', ')} </span>
           <br/>
 
-          <strong>Calldata: </strong> <span>{el.data} </span>
+          <strong>Calldata: </strong> <span title={el.data}>{el.parsedData} </span>
 
           {el.executeTx === undefined && /* show buttons only if not executed yet*/
             (el.confirmed.includes(account) &&
