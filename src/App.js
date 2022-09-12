@@ -26,6 +26,8 @@ function App() {
     ownersReplaceTo: '',
     changeRequirement: '',
     submitTransaction: '',
+    upgradeTo: '',
+    andCall: '',
   });
   const [txs, setTxs] = useState([]);
 
@@ -83,6 +85,11 @@ function App() {
   const replaceOwner = () => __submitTransaction(contract.current.populateTransaction.replaceOwner(formData.ownersReplaceFrom, formData.ownersReplaceTo));
   const changeRequirement = () => __submitTransaction(contract.current.populateTransaction.changeRequirement(+formData.changeRequirement));
 
+  const upgradeToAndCall = () => {
+    if (formData.andCall)
+      return handleTx(contract.current.upgradeToAndCall(formData.upgradeTo, formData.andCall))
+    return handleTx(contract.current.upgradeTo(formData.upgradeTo))
+  };
   const submitTransaction = () => _submitTransaction(formData.submitTransaction);
   const confirmTransaction = (id) => handleTx(contract.current.confirmTransaction(id));
   const revokeConfirmation = (id) => handleTx(contract.current.revokeConfirmation(id));
@@ -143,6 +150,11 @@ function App() {
              placeholder="Transaction calldata"/>
       <button onClick={submitTransaction}>Submit</button>
       <br/>
+      <input name="upgradeTo" type="text" onChange={handleFormData} value={formData.upgradeTo}
+             placeholder="upgradeTo"/>
+      <input name="andCall" type="text" onChange={handleFormData} value={formData.andCall}
+             placeholder="andCall"/>
+      <button onClick={upgradeToAndCall}>upgradeToAndCall</button>
       <hr/>
 
 
