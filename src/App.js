@@ -30,7 +30,7 @@ function App() {
   const selectContract = ({target}) => {
     setContractAddress(target.value);
     queryParams.set('contract', target.value);
-    window.history.replaceState(undefined, undefined, queryParams.toString());
+    window.history.replaceState(undefined, undefined, '?' + queryParams.toString());
   }
 
   return (<div>
@@ -39,9 +39,9 @@ function App() {
 
     <span>Contract address: </span>
     <input name="address" type="text" onChange={selectContract} value={contractAddress} placeholder="Contract address"/>
-    <select onChange={selectContract}>
+    <select onChange={selectContract} defaultValue={contractAddress}>
       {contractsList.map(({stage, pair, network, address}) => (
-        <option key={address} value={address} selected={address === contractAddress}>
+        <option key={address} value={address}>
           {`amb-${pair} in ${network.toUpperCase()} ${stage.toUpperCase()}net`}
         </option>
       ))}
