@@ -46,19 +46,12 @@ export async function getTxs(contract) {
       const executeTx = txExecuteTx[txId];
       const status = txStatus[+txId] || 'Not yet';  // Success, Failure or Not yet
 
-      let parsedData = 'Unknown method';
-      try {
-        parsedData = parseCalldata(contract, tx.data)
-      } catch (e) {
-      }
-
       resolve({
         ...tx,
         id: txId,
         confirmed,
         status,
         executeTx,
-        parsedData,
       });
     })
   ));
@@ -84,17 +77,4 @@ async function getTxLogs(contract) {
   [...successfullTx, ...failedTx].forEach(log => txExecuteTx[log.args.transactionId] = log);
 
   return {txExecuteTx, txStatus};
-}
-
-function parseCalldata(contract, data) {
-  const replacer = (k, v) => {  // replace BigNumber with hex string
-    if (v.type === 'BigNumber') return v.hex;
-    return v;
-  }
-  const calledMethod = contract.interface.getFunction(data.substring(0, 10));
-  const calledArgs = contract.interface.decodeFunctionData(calledMethod.name, data);
-
-  const jsonCalledArgs = JSON.stringify(calledArgs, replacer, 1);
-  const textArgs = jsonCalledArgs.substring(1, jsonCalledArgs.length - 1).trim(); // trim brackets and spaces
-  return `${calledMethod.name}(${textArgs})`;
 }

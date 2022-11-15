@@ -1175,14 +1175,19 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_confirmations",
-        "type": "uint256"
+        "internalType": "address[]",
+        "name": "_watchdogs",
+        "type": "address[]"
       },
       {
-        "internalType": "address[]",
-        "name": "_relays",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "_fee_provider",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "oldDefaultAdmin",
+        "type": "address"
       }
     ],
     "name": "upgrade",

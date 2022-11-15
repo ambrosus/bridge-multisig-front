@@ -2,6 +2,8 @@ import {useEffect, useState} from "react";
 import {getTxs} from "./utils/contracts";
 import {ethers} from 'ethers';
 import addrNames from "./utils/addressesNames.json";
+import {ParsedCalldata} from "./utils/parseCalldata";
+import ABI from './utils/abi.json';
 
 export default function Multisig({contract}) {
   const [formData, setFormData] = useState({
@@ -112,7 +114,7 @@ export default function Multisig({contract}) {
         title={addr}>{addrNames[addr] || addr}  &nbsp;</span>)} </span>
         <br/>
 
-        <strong>Calldata: </strong> <span title={el.data}>{el.parsedData} </span>
+        <strong>Calldata: </strong><ParsedCalldata abi={ABI} calldata={el.data}/>
         <br/>
         <br/>
 
@@ -182,6 +184,9 @@ export default function Multisig({contract}) {
       <MyInput name="andCall" placeholder="andCall"/>
       <button onClick={upgradeToAndCall}>upgradeToAndCall</button>
       <hr/>
+
+      {formData.submitTransaction && <span>Parsed submitTransaction form: <ParsedCalldata calldata={formData.submitTransaction} abi={ABI}/></span>}
+      {formData.andCall && <span>Parsed andCall form: <ParsedCalldata calldata={formData.andCall} abi={ABI}/></span>}
 
 
       <h3>Transactions <button onClick={updateTxs}>↻</button></h3>
