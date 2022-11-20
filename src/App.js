@@ -48,7 +48,7 @@ function App() {
     </select>
 
     <br/>
-    {contract && <Multisig contract={contract}/>}
+    {contract && <Multisig contract={contract} account={account}/>}
   </div>);
 
 }

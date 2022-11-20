@@ -5,7 +5,7 @@ import addrNames from "./utils/addressesNames.json";
 import {ParsedCalldata} from "./utils/parseCalldata";
 import ABI from './utils/abi.json';
 
-export default function Multisig({contract}) {
+export default function Multisig({contract, account}) {
   const [formData, setFormData] = useState({
     ownersAdd: '',
     ownersRemove: '',
@@ -119,7 +119,7 @@ export default function Multisig({contract}) {
         <br/>
 
         {el.executeTx === undefined && /* show buttons only if not executed yet*/
-          (el.confirmed.includes(contract.signer.address) ?
+          (el.confirmed.includes(account) ?
             <button onClick={() => revokeConfirmation(el.id)}>Revoke</button> :
             <button onClick={() => confirmTransaction(el.id)}>Confirm</button>
           )
@@ -150,8 +150,8 @@ export default function Multisig({contract}) {
 
       <strong>Required:</strong> {data.required}
 
-      {!data.multisigners.includes(contract.signer.address) &&
-        <h3>Your address `{contract.signer.address}` not in multisig owners list!</h3>
+      {!data.multisigners.map(el => el.address).includes(account) &&
+        <h3>Your address `{account}` not in multisig owners list!</h3>
       }
 
       <br/>
