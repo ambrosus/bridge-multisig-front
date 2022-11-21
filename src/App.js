@@ -39,7 +39,7 @@ function App() {
 
     <span>Contract address: </span>
     <input name="address" type="text" onChange={selectContract} value={contractAddress} placeholder="Contract address"/>
-    <select onChange={selectContract} defaultValue={contractAddress}>
+    <select onChange={selectContract} value={contractAddress}>
       {contractsList.map(({stage, pair, network, address}) => (
         <option key={address} value={address}>
           {`amb-${pair} in ${network.toUpperCase()} ${stage.toUpperCase()}net`}
