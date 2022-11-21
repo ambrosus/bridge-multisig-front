@@ -92,6 +92,12 @@ export default function Multisig({contract, account}) {
   const submitTransaction = () => _submitTransaction(formData.submitTransaction);
   const confirmTransaction = (id) => handleTx(contract.confirmTransaction(id));
   const revokeConfirmation = (id) => handleTx(contract.revokeConfirmation(id));
+  const confirmTransactionWithWarning = (tx_) => {
+    if (tx_.confirmed.length === data.required - 1)
+      alert("Seems you are the last one to confirm this transaction. Make sure you are sure! " +
+        "Also just in case increase gas limit to maximum you can afford.");
+    return confirmTransaction(tx_.id);
+  }
 
 
   function MyInput({name, placeholder}) {
@@ -118,7 +124,7 @@ export default function Multisig({contract, account}) {
         {el.executeTx === undefined && /* show buttons only if not executed yet*/
           (el.confirmed.includes(account) ?
             <button onClick={() => revokeConfirmation(el.id)}>Revoke</button> :
-            <button onClick={() => confirmTransaction(el.id)}>Confirm</button>
+            <button onClick={() => confirmTransactionWithWarning(el)}>Confirm</button>
           )
         }
 
