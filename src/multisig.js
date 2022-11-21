@@ -100,7 +100,7 @@ export default function Multisig({contract, account}) {
 
   function Transaction({el}) {
     return (
-      <div>
+      <div className={"transaction"}>
         <strong>ID:</strong> <span>{+el.id} </span>
         <br/>
 
@@ -115,9 +115,6 @@ export default function Multisig({contract, account}) {
         <br/>
 
         <strong>Calldata: </strong><ParsedCalldata abi={ABI} calldata={el.data}/>
-        <br/>
-        <br/>
-
         {el.executeTx === undefined && /* show buttons only if not executed yet*/
           (el.confirmed.includes(account) ?
             <button onClick={() => revokeConfirmation(el.id)}>Revoke</button> :

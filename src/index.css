@@ -11,6 +11,10 @@ code {
     monospace;
 }
 
+.transaction {
+    margin-bottom: 30px;
+}
+
 .methodCall {
     border: black 1px solid;
 }
