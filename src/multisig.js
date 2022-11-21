@@ -80,7 +80,7 @@ export default function Multisig({contract, account}) {
   const _submitTransaction = (calldata) => handleTx(contract.submitTransaction(contract.address, 0, calldata, {gasLimit: 10000000}));
 
   const addOwner = () => __submitTransaction(contract.populateTransaction.addOwner(formData.ownersAdd));
-  const removeOwner = () => __submitTransaction(contract.populateTransaction.addOwner(formData.ownersRemove));
+  const removeOwner = () => __submitTransaction(contract.populateTransaction.removeOwner(formData.ownersRemove));
   const replaceOwner = () => __submitTransaction(contract.populateTransaction.replaceOwner(formData.ownersReplaceFrom, formData.ownersReplaceTo));
   const changeRequirement = () => __submitTransaction(contract.populateTransaction.changeRequirement(+formData.changeRequirement));
 
