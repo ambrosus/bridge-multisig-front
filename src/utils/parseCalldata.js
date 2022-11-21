@@ -55,7 +55,7 @@ function Input(props) {
           <span>parsed method call: <MethodCall call={methodCall}/></span> :
           <code>{Array.isArray(value) ?
             JSON.stringify(value, null, 2) :
-            value}</code>
+            value.toString()}</code>
         }
       </div>
     </div>
