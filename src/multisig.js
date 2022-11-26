@@ -80,9 +80,14 @@ export default function Multisig({contract, account}) {
   const _submitTransaction = async (calldata) => {
     // empirically determined that the estimate is ~7% less than necessary
     // `addOwner` method estimated gas = 216_360, but evm use 230_797
-    const estimatedGasLimit = await contract.estimateGas.submitTransaction(contract.address, 0, calldata);
-    const increasedGasLimit = Math.round(+estimatedGasLimit * 1.1)
-    await handleTx(contract.submitTransaction(contract.address, 0, calldata, {gasLimit: increasedGasLimit}));
+    try {
+      const estimatedGasLimit = await contract.estimateGas.submitTransaction(contract.address, 0, calldata);
+      const increasedGasLimit = Math.round(+estimatedGasLimit * 1.1)
+      await handleTx(contract.submitTransaction(contract.address, 0, calldata, {gasLimit: increasedGasLimit}));
+    } catch (e) {
+      alert("Estimate error: ", e.message)
+      console.error(e);
+    }
   }
 
   const addOwner = () => __submitTransaction(contract.populateTransaction.addOwner(formData.ownersAdd));
