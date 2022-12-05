@@ -155,7 +155,7 @@ export default function Multisig({contract, account}) {
       <ul>
         {data.multisigners.map((el) => (
           <li key={el.address}>
-            <code style={{whiteSpace: "pre"}}>{(addrNames[el.address] || "¯\_(ツ)_/¯").padEnd(8)}</code> |&nbsp;
+            <code style={{whiteSpace: "pre"}}>{formatAddrName(el.address)}</code> |&nbsp;
             <code>{el.address}</code> |&nbsp;
             Balance: {ethers.utils.formatEther(el.balance)}
           </li>
@@ -209,3 +209,7 @@ export default function Multisig({contract, account}) {
   );
 }
 
+function formatAddrName(address) {
+  const maxNameLength = Math.max(...Object.values(addrNames).map(el => el.length));
+  return (addrNames[address] || "¯\_(ツ)_/¯").padEnd(maxNameLength)
+}
