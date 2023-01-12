@@ -116,15 +116,18 @@ export default function Multisig({contract, account}) {
   }
 
   function Transaction({el}) {
+    const status = el.executed ? "Executed" :
+      el.confirmed.length < data.required ? "Waiting for confirmations" : "Failure";
+
     return (
       <div className={"transaction"}>
         <strong>ID:</strong> <span>{+el.id} </span>
         <br/>
 
-        <strong>Executed:</strong> <span>{el.status} </span>
-        {el.executeTx !== undefined &&
-          <i>(Tx:: {el.executeTx.transactionHash} )</i>
-        }
+        <strong>Status:</strong> <span>{status} </span>
+        {/*{el.executeTx !== undefined &&*/}
+        {/*  <i>(Tx:: {el.executeTx.transactionHash} )</i>*/}
+        {/*}*/}
         <br/>
 
         <strong>Confirmed by: </strong> <span>{el.confirmed.map(addr => <span
@@ -132,7 +135,7 @@ export default function Multisig({contract, account}) {
         <br/>
 
         <strong>Calldata: </strong><ParsedCalldata abi={ABI} calldata={el.data}/>
-        {el.executeTx === undefined && /* show buttons only if not executed yet*/
+        {!el.executed && /* show buttons only if not executed yet*/
           (el.confirmed.includes(account) ?
             <button onClick={() => revokeConfirmation(el.id)}>Revoke</button> :
             <button onClick={() => confirmTransactionWithWarning(el)}>Confirm</button>

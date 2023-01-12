@@ -35,28 +35,27 @@ export async function getTxs(contract) {
   const txIds = await contract.getTransactionIds(0, count, true, true);
 
   // get execution results for each tx from events
-  const {txExecuteTx, txStatus} = await getTxLogs(contract);
+  // const {txExecuteTx, txStatus} = await getTxLogs(contract);
 
-  const txPromises = txIds.map((txId) => (
-    new Promise(async (resolve) => {
+  const txes = [];
+  for (const txId of txIds) {
+    const tx = await contract.transactions(txId);
+    const confirmed = await contract.getConfirmations(txId);
 
-      const tx = await contract.transactions(txId);
-      const confirmed = await contract.getConfirmations(txId);
+    // const executeTx = txExecuteTx[txId];
+    // const status = txStatus[+txId] || 'Not yet';  // Success, Failure or Not yet
 
-      const executeTx = txExecuteTx[txId];
-      const status = txStatus[+txId] || 'Not yet';  // Success, Failure or Not yet
 
-      resolve({
-        ...tx,
-        id: txId,
-        confirmed,
-        status,
-        executeTx,
-      });
-    })
-  ));
+    const res = {
+      ...tx,
+      id: txId,
+      confirmed,
+      // status,
+      // executeTx,
+    };
+    txes.push(res)
+  }
 
-  const txes = await Promise.all(txPromises);
   return txes.reverse() // newest first
 }
 
