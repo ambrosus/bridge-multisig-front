@@ -20,7 +20,6 @@ export async function getContractAddresses() {
   };
 
   const results = await Promise.all([
-    fetchConfig('https://bridge-config.ambrosus-dev.io/index.html', 'dev'),
     fetchConfig('https://bridge-config.ambrosus-test.io/index.html', 'test'),
     fetchConfig('https://bridge-config.ambrosus.io/index.html', 'main'),
   ])
