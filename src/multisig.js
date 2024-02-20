@@ -1,11 +1,11 @@
-import {useEffect, useState} from "react";
-import {getTxs} from "./utils/contracts";
-import {ethers} from 'ethers';
+import { useEffect, useState } from "react";
+import { getTxs } from "./utils/contracts";
+import { ethers } from 'ethers';
 import addrNames from "./utils/addressesNames.json";
-import {ParsedCalldata} from "./utils/parseCalldata";
+import { ParsedCalldata } from "./utils/parseCalldata";
 import ABI from './utils/abi.json';
 
-export default function Multisig({contract, account}) {
+export default function Multisig({ contract, account }) {
   const [formData, setFormData] = useState({
     ownersAdd: '',
     ownersRemove: '',
@@ -16,8 +16,8 @@ export default function Multisig({contract, account}) {
     upgradeTo: '',
     andCall: '',
   });
-  const handleFormData = ({target}) => {
-    setFormData((state) => ({...state, [target.name]: target.value}))
+  const handleFormData = ({ target }) => {
+    setFormData((state) => ({ ...state, [target.name]: target.value }))
   };
 
   const [data, setData] = useState(null);
@@ -32,11 +32,11 @@ export default function Multisig({contract, account}) {
     const multisignersAddresses = await contract.getOwners();
     const multisigners = await Promise.all(multisignersAddresses.map(async (address) => {
       const balance = await contract.provider.getBalance(address);
-      return {address, balance};
+      return { address, balance };
     }));
     const required = +await contract.required();
 
-    setData({implementationAddress, multisigners, required});
+    setData({ implementationAddress, multisigners, required });
   }
 
   const updateTxs = async () => {
@@ -47,7 +47,7 @@ export default function Multisig({contract, account}) {
 
 
   useEffect(() => {
-    fetchContractData().catch((e) => setData({error: e}))
+    fetchContractData().catch((e) => setData({ error: e }))
   }, [contract]);
   useEffect(() => {
     updateTxs()
@@ -83,7 +83,7 @@ export default function Multisig({contract, account}) {
     try {
       const estimatedGasLimit = await contract.estimateGas.submitTransaction(contract.address, 0, calldata);
       const increasedGasLimit = Math.round(+estimatedGasLimit * 1.1)
-      await handleTx(contract.submitTransaction(contract.address, 0, calldata, {gasLimit: increasedGasLimit}));
+      await handleTx(contract.submitTransaction(contract.address, 0, calldata, { gasLimit: increasedGasLimit }));
     } catch (e) {
       alert("Estimate error: ", e.message)
       console.error(e);
@@ -103,6 +103,7 @@ export default function Multisig({contract, account}) {
   const submitTransaction = () => _submitTransaction(formData.submitTransaction);
   const confirmTransaction = (id) => handleTx(contract.confirmTransaction(id));
   const revokeConfirmation = (id) => handleTx(contract.revokeConfirmation(id));
+  const executeTransaction = (id) => handleTx(contract.executeTransaction(id));
   const confirmTransactionWithWarning = (tx_) => {
     if (tx_.confirmed.length === data.required - 1)
       alert("Seems you are the last one to confirm this transaction. Make sure you are sure! " +
@@ -111,11 +112,11 @@ export default function Multisig({contract, account}) {
   }
 
 
-  function MyInput({name, placeholder}) {
+  function MyInput({ name, placeholder }) {
     return <input name={name} type="text" onChange={handleFormData} value={formData[name]} placeholder={placeholder}/>
   }
 
-  function Transaction({el}) {
+  function Transaction({ el }) {
     const status = el.executed ? "Executed" :
       el.confirmed.length < data.required ? "Waiting for confirmations" : "Failure";
 
@@ -136,9 +137,11 @@ export default function Multisig({contract, account}) {
 
         <strong>Calldata: </strong><ParsedCalldata abi={ABI} calldata={el.data}/>
         {!el.executed && /* show buttons only if not executed yet*/
-          (el.confirmed.includes(account) ?
-            <button onClick={() => revokeConfirmation(el.id)}>Revoke</button> :
-            <button onClick={() => confirmTransactionWithWarning(el)}>Confirm</button>
+          (!el.confirmed.includes(account) ?
+              <button onClick={() => confirmTransactionWithWarning(el)}>Confirm</button> : <>
+                <button onClick={() => revokeConfirmation(el.id)}>Revoke</button>
+                <button onClick={() => executeTransaction(el.id)}>Retry</button>
+              </>
           )
         }
 
@@ -158,7 +161,7 @@ export default function Multisig({contract, account}) {
       <ul>
         {data.multisigners.map((el) => (
           <li key={el.address}>
-            <code style={{whiteSpace: "pre"}}>{formatAddrName(el.address)}</code> |&nbsp;
+            <code style={{ whiteSpace: "pre" }}>{formatAddrName(el.address)}</code> |&nbsp;
             <code>{el.address}</code> |&nbsp;
             Balance: {ethers.utils.formatEther(el.balance)}
           </li>
@@ -202,7 +205,8 @@ export default function Multisig({contract, account}) {
       <button onClick={upgradeToAndCall}>upgradeToAndCall</button>
       <hr/>
 
-      {formData.submitTransaction && <span>Parsed submitTransaction form: <ParsedCalldata calldata={formData.submitTransaction} abi={ABI}/></span>}
+      {formData.submitTransaction &&
+        <span>Parsed submitTransaction form: <ParsedCalldata calldata={formData.submitTransaction} abi={ABI}/></span>}
       {formData.andCall && <span>Parsed andCall form: <ParsedCalldata calldata={formData.andCall} abi={ABI}/></span>}
 
 
